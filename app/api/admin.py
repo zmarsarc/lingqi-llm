@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
-from app.service.users import UserService, User
+from app.service.users import UserService
+from app.model.user import User
 from typing import List
 from pydantic import BaseModel
 

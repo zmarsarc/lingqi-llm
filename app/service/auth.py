@@ -1,7 +1,8 @@
-from fastapi import Depends
-from app.service.users import UserService, User
+from fastapi import Depends, Header, HTTPException
+from app.service.users import UserService
 from uuid import uuid4
-from typing import Dict
+from typing import Dict, Optional, Annotated
+from app.model.auth import Session
 
 
 class LoginError(Exception):
@@ -22,7 +23,7 @@ class PasswordIncorrectError(LoginError):
         self.actual = actual_pwd
 
 
-session: Dict[str, User] = {}
+sessions: Dict[str, Session] = {}
 login_user_token: Dict[int, str] = {}
 
 
@@ -44,6 +45,21 @@ class AuthService:
 
         # Or make a new token.
         token = str(uuid4())
-        session[token] = user
+        sessions[token] = Session(token=token, user=user)
         login_user_token[user.id] = token
         return token
+
+    def get_session_by_token(self, token: str) -> Optional[Session]:
+        return sessions.get(token)
+
+
+def check_valid_auth(authorization: Annotated[str, Header()], auth: AuthService = Depends(AuthService)):
+    scheme, credential = authorization.split()
+    if scheme.lower() != 'basic':
+        raise HTTPException(
+            status_code=401, detail="authorization scheme not support.")
+
+    ses = auth.get_session_by_token(credential)
+    if ses is None:
+        raise HTTPException(status_code=401, detail="need login.")
+    return ses

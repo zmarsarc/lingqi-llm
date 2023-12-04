@@ -3,12 +3,7 @@ from pydantic import BaseModel
 from fastapi import Depends
 from .db import database
 from typing import List, Optional
-
-
-class User(BaseModel):
-    id: int
-    username: str
-    password: str
+from app.model.user import User
 
 
 class UserService:

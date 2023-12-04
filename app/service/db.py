@@ -6,12 +6,21 @@ schema_users = '''CREATE TABLE IF NOT EXISTS users(
   password TEXT NOT NULL);
 '''
 
+schema_chat = '''CREATE TABLE if NOT EXISTS chat_history(
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER not NULL,
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  ctime TEXT NOT NULL);
+'''
+
 
 def _init_db(cur: sqlite3.Cursor):
     cur.execute(schema_users)
+    cur.execute(schema_chat)
 
 
-def _make_db_connect(path: str = '/app/data.db'):
+def _make_db_connect(path: str = '/var/llm.db'):
     conn = sqlite3.connect(path)
     _init_db(conn.cursor())
     conn.commit()

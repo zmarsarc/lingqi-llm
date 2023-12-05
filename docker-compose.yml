@@ -17,7 +17,6 @@ services:
 
       # define database file path inside container.
       - DATA_FILE_PATH=/var/data.db
-    restart_policy:
-        condition: on-failure
+
     volumes:
       - /var/:/var/:rw

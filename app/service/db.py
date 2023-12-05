@@ -1,4 +1,5 @@
 import sqlite3
+from app.config import app_settings
 
 schema_users = '''CREATE TABLE IF NOT EXISTS users(
   id INTEGER PRIMARY KEY,
@@ -20,7 +21,7 @@ def _init_db(cur: sqlite3.Cursor):
     cur.execute(schema_chat)
 
 
-def _make_db_connect(path: str = '/var/llm.db'):
+def _make_db_connect(path: str = app_settings.data_file_path):
     conn = sqlite3.connect(path)
     _init_db(conn.cursor())
     conn.commit()

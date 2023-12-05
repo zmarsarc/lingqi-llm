@@ -5,9 +5,11 @@ from app.model.common import CommonResponse
 
 router = APIRouter()
 
+
 class LoginRequest(BaseModel):
     username: str
     password: str
+
 
 class LoginResponse(CommonResponse):
     token: str

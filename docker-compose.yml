@@ -4,11 +4,12 @@ services:
   app:
     image: lingqi/llm
     container_name: llm_app
+    network_mode: host
     environment:
-      # define app server port inside container.
+      # define app server port.
       # - APP_PORT=8000
       
-      # define admin server port inside container.
+      # define admin server port.
       # - ADMIN_PORT=8001
       
       # define server host, 0.0.0.0 for expose service.
@@ -16,10 +17,7 @@ services:
 
       # define database file path inside container.
       - DATA_FILE_PATH=/var/data.db
-
-    ports:
-      - 8000:8000
-      - 8001:8001
-
+    restart_policy:
+        condition: on-failure
     volumes:
       - /var/:/var/:rw

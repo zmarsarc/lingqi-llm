@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app.service.auth import AuthService, LoginError
+from app.model.common import CommonResponse
 
 router = APIRouter()
 
@@ -8,9 +9,7 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
-class LoginResponse(BaseModel):
-    code: int = 0
-    msg: str = 'ok'
+class LoginResponse(CommonResponse):
     token: str
 
 

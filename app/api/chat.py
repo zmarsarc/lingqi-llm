@@ -3,6 +3,7 @@ from app.service.auth import check_valid_auth
 from app.model.auth import Session
 from pydantic import BaseModel
 from app.service.chat import ChatService
+from app.model.common import CommonResponse
 
 router = APIRouter()
 
@@ -16,9 +17,7 @@ class ChatRequest(BaseModel):
     question: str
 
 
-class ChatResponse(BaseModel):
-    code: int = 0
-    msg: str = 'ok'
+class ChatResponse(CommonResponse):
     answer: str
 
 

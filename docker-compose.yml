@@ -1,0 +1,25 @@
+version: '3.0'
+
+services:
+  app:
+    image: lingqi/llm
+    container_name: llm_app
+    environment:
+      # define app server port inside container.
+      # - APP_PORT=8000
+      
+      # define admin server port inside container.
+      # - ADMIN_PORT=8001
+      
+      # define server host, 0.0.0.0 for expose service.
+      - HOST=0.0.0.0
+
+      # define database file path inside container.
+      - DATA_FILE_PATH=/var/data.db
+
+    ports:
+      - 8000:8000
+      - 8001:8001
+
+    volumes:
+      - /var/:/var/:rw

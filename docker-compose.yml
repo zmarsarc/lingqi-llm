@@ -18,5 +18,14 @@ services:
       # define database file path inside container.
       - DATA_FILE_PATH=/var/data.db
 
+      # enable https? default enable.
+      # - HTTPS_ENABLE=1
+
+      # https key file path.
+      # - SSL_KEYFILE=secrets/server.key
+
+      # https cert file path.
+      # - SSL_CERTFILE=secrets/server.crt
+
     volumes:
       - /var/:/var/:rw

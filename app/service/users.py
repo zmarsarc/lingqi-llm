@@ -12,6 +12,7 @@ class UserService:
         self._conn = conn
 
     def insert_user(self, username: str, password: str) -> int:
+        # FIXME do not save plain password
         with self._conn:
             cur = self._conn.execute(
                 'insert into users(username, password) values (?, ?)', (username, password))

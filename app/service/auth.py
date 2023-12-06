@@ -16,11 +16,10 @@ class UserNotExistsError(LoginError):
 
 
 class PasswordIncorrectError(LoginError):
-    def __init__(self, username: str, correct_pwd: str, actual_pwd: str, *args: object) -> None:
+    def __init__(self, username: str, pwd: str, *args: object) -> None:
         super().__init__(*args)
         self.username = username
-        self.pwd = correct_pwd
-        self.actual = actual_pwd
+        self.pwd = pwd
 
 
 sessions: Dict[str, Session] = {}
@@ -36,8 +35,8 @@ class AuthService:
         user = self._srv.find_user_by_name(username)
         if user is None:
             raise UserNotExistsError(username=username)
-        if user.password != password:
-            raise PasswordIncorrectError(username, user.password, password)
+        if user.password != self._srv.gen_actual_pwd(password, user.salt):
+            raise PasswordIncorrectError(username, password)
 
         # If user already logined, return same token.
         if user.id in login_user_token:

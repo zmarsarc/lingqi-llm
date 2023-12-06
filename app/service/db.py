@@ -1,15 +1,17 @@
 import sqlite3
 from app.config import app_settings
 
-schema_users = '''CREATE TABLE IF NOT EXISTS users(
+schema_users = '''CREATE table if not EXISTS users (
   id INTEGER PRIMARY KEY,
-  username TEXT NOT NULL,
-  password TEXT NOT NULL);
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  salt TEXT NOT NULL,
+  ctime TEXT NOT NULL);
 '''
 
 schema_chat = '''CREATE TABLE if NOT EXISTS chat_history(
   id INTEGER PRIMARY KEY,
-  user_id INTEGER not NULL,
+  user_id INTEGER NOT NULL,
   question TEXT NOT NULL,
   answer TEXT NOT NULL,
   ctime TEXT NOT NULL);

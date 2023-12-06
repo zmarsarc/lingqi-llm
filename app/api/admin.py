@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from app.service.users import UserService
-from app.model.user import User
+from app.model.user import UserBasic
 from typing import List
 from pydantic import BaseModel
 
@@ -24,5 +24,5 @@ async def add_user(user: AddUserRequest, srv: UserService = Depends(UserService)
 
 
 @router.get('/users')
-async def list_users(srv: UserService = Depends(UserService)) -> List[User]:
+async def list_users(srv: UserService = Depends(UserService)) -> List[UserBasic]:
     return srv.get_all_users()

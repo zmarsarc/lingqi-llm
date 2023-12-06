@@ -54,7 +54,7 @@ class AuthService:
 
 def check_valid_auth(authorization: Annotated[str, Header()], auth: AuthService = Depends(AuthService)):
     scheme, credential = authorization.split()
-    if scheme.lower() != 'basic':
+    if scheme.lower() != 'bearer':
         raise HTTPException(
             status_code=401, detail="authorization scheme not support.")
 

@@ -2,7 +2,7 @@ version: '3.0'
 
 services:
   app:
-    image: lingqi/llm
+    image: lqtech/llm-web-backend
     container_name: llm_app
     network_mode: host
     environment:

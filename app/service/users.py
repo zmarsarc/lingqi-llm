@@ -1,6 +1,5 @@
-import sqlite3
 from fastapi import Depends
-from .db import database
+from .db import database, Connection
 from typing import List, Optional
 from app.model.user import UserWithSecret
 import random
@@ -11,48 +10,37 @@ from app.utilts import time
 
 class UserService:
 
-    def __init__(self, conn: sqlite3.Connection = Depends(database)) -> None:
-        self._conn = conn
+    def __init__(self, db: Connection = Depends(database)) -> None:
+        self._db = db
 
-    def insert_user(self, username: str, password: str) -> int:
+    async def insert_user(self, username: str, password: str) -> int:
+        # Generate a random salt str.
+        salt = ''.join(random.choices(
+            string.ascii_lowercase + string.digits, k=8))
 
-        with self._conn:
-            # Generate a random salt str.
-            salt = ''.join(random.choices(
-                string.ascii_lowercase + string.digits, k=8))
+        # get encrypted password.
+        pwd = self.gen_actual_pwd(password, salt)
 
-            # get encrypted password.
-            pwd = self.gen_actual_pwd(password, salt)
-
-            cur = self._conn.execute(
+        async with self._db.cursor() as cur:
+            cur = await cur.execute(
                 'insert into users(username, password, salt, ctime) values (?, ?, ?, ?)', (username, pwd, salt, time.current_datetime_str()))
+            await self._db.commit()
             return cur.lastrowid
 
-    def get_all_users(self) -> List[UserWithSecret]:
-        cur = self._conn.execute('select * from users;')
-        res = []
-        while True:
-            ptr = cur.fetchone()
-            if ptr is None:
-                return res
-            res.append(
-                UserWithSecret(id=ptr['id'],
-                               username=ptr['username'],
-                               password=ptr['password'],
-                               salt=ptr['salt'],
-                               ctime=time.parse_daetetime(ptr['ctime'])))
+    async def get_all_users(self) -> List[UserWithSecret]:
+        async with self._db.execute('select * from users;') as cur:
+            cur.row_factory = UserWithSecret.row_factory
+            return await cur.fetchall()
 
-    def find_user_by_name(self, username: str) -> Optional[UserWithSecret]:
-        cur = self._conn.execute(
-            'select * from users where username = ?', (username,))
-        row = cur.fetchone()
-        if row is None:
-            return None
-        return UserWithSecret(id=row['id'],
-                              username=row['username'],
-                              password=row['password'],
-                              salt=row['salt'],
-                              ctime=time.parse_daetetime(row['ctime']))
+    async def find_user_by_name(self, username: str) -> Optional[UserWithSecret]:
+        async with self._db.execute('select * from users where username = ?', (username,)) as cur:
+            cur.row_factory = UserWithSecret.row_factory
+            return await cur.fetchone()
+
+    async def get(self, uid: int) -> UserWithSecret | None:
+        async with self._db.execute('select * from users where id = ?', (uid, )) as cur:
+            cur.row_factory = UserWithSecret.row_factory
+            return await cur.fetchone()
 
     def gen_actual_pwd(self, pwd: str, salt: str) -> str:
         return hashlib.sha1((pwd + salt).encode('ascii')).hexdigest()

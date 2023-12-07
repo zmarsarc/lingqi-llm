@@ -19,10 +19,10 @@ class AddUserResponse(BaseModel):
 
 @router.post('/user')
 async def add_user(user: AddUserRequest, srv: UserService = Depends(UserService)) -> AddUserResponse:
-    id = srv.insert_user(user.username, user.password)
+    id = await srv.insert_user(user.username, user.password)
     return AddUserResponse(username=user.username, id=id)
 
 
 @router.get('/users')
 async def list_users(srv: UserService = Depends(UserService)) -> List[UserBasic]:
-    return srv.get_all_users()
+    return await srv.get_all_users()

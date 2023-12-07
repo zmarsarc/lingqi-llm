@@ -1,4 +1,4 @@
-version: '3.0'
+version: '3'
 
 services:
   app:
@@ -7,7 +7,7 @@ services:
     network_mode: host
     environment:
       # define app server port.
-      # - APP_PORT=8000
+      - APP_PORT=8200
       
       # define admin server port.
       # - ADMIN_PORT=8001
@@ -16,7 +16,7 @@ services:
       - HOST=0.0.0.0
 
       # define database file path inside container.
-      - DATA_FILE_PATH=/var/data.db
+      - DATA_FILE_PATH=/var/llm-main.db
 
       # enable https? default enable.
       # - HTTPS_ENABLE=1
@@ -28,4 +28,4 @@ services:
       # - SSL_CERTFILE=secrets/server.crt
 
     volumes:
-      - /var/:/var/:rw
+      - /var/llm/:/var/:rw

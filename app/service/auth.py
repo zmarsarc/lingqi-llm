@@ -85,6 +85,11 @@ class SessionManager:
             if cur.rowcount == 0:
                 raise SessionNotExistsError(uid)
 
+    async def del_session(self, uid: int):
+        async with self._db.cursor() as cur:
+            await cur.execute('delete from sessions where uid = ?', (uid,))
+            await self._db.commit()
+
 
 class AuthService:
 
@@ -104,8 +109,12 @@ class AuthService:
         # If user already logined, return same token.
         ses = await self._sessions.find_session_by_uid(user.id)
         if ses is not None:
-            await self._sessions.flush_session(datetime.now(), ses.user.id)
-            return ses
+            if ses.is_valid(datetime.now()):
+                await self._sessions.flush_session(datetime.now(), ses.user.id)
+                return ses
+
+            # session expire
+            await self._sessions.del_session(ses.user.id)
 
         # Or make a new token.
         ses = await self._sessions.new_session(user, datetime.now(), auth_settings.expires)
@@ -121,6 +130,9 @@ async def valid_session(authorization: Annotated[str, Header()],
     if scheme.lower() == 'bearer':
         ses = await sessions.find_session_by_token(credential)
         if ses is None:
+            raise HTTPException(status_code=401, detail="need login.")
+        if not ses.is_valid(datetime.now()):
+            await sessions.del_session(ses.user.id)
             raise HTTPException(status_code=401, detail="need login.")
         await sessions.flush_session(datetime.now(), ses.user.id)
         return ses

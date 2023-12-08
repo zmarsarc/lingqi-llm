@@ -32,6 +32,12 @@ services:
 
       # Chat word black list file path.
       # - CAHT_CONFIG_PATH=/etc/llm/blacklist.conf
+
+      # Sensitive content filter mode [disable|block|replace]
+      # disable: disable all filter.
+      # block: block any content which include sensitive words.
+      # replace: replace sensitive words by its replacement.
+      # - CHAT_BLACKLIST_MODE=block
  
     volumes:
       - /var/llm/:/var/:rw

@@ -1,10 +1,13 @@
+import httpx
+import functools
+import re
 from fastapi import Depends
-from app.service.db import database, Connection
 from datetime import datetime
-from typing import List
+from typing import List, Dict
+from app.service.db import database, Connection
 from app.model.chat import ChatHistoryRaw, LLMChatRequest, LLMChatResponse
 from app.utilts import time
-import httpx
+from app.config import chat_settings
 
 
 class ChatHistoryService:
@@ -27,16 +30,40 @@ class ChatHistoryService:
             return await cur.fetchall()
 
 
-url = "http://www.lingqi.tech:8606/chat/chat"
-
-
 class ChatService:
     """Use to provide LLM chat service."""
 
-    async def fastchat(self, content) -> LLMChatResponse:
+    def __init__(self, blacklist_path: str = chat_settings.blacklist_path) -> None:
+        self._blacklist = self._load_blacklist(blacklist_path)
+
+    async def chat(self, content) -> LLMChatResponse:
         async with httpx.AsyncClient() as client:
             req = LLMChatRequest(query=content, conversation_id='test')
 
-            # TODO set api timeout from config.
-            resp = await client.post(url=url, json=req.model_dump(by_alias=True), timeout=15)
+            resp = await client.post(url=chat_settings.api_url, json=req.model_dump(by_alias=True), timeout=chat_settings.api_timeout)
             return LLMChatResponse.model_validate_json(resp.content)
+
+    def blacklist_check(self, content: str) -> bool:
+        for p in self._blacklist.keys():
+            if p.search(content):
+                return False
+        return True
+
+    def blacklist_replace(self, content: str) -> str:
+        res = content
+        for p, r in self._blacklist.items():
+            if p.search(content):
+                res = re.sub(p, r, res)
+        return res
+
+    @functools.cache
+    def _load_blacklist(self, path: str) -> Dict[re.Pattern, str]:
+        res = {}
+        try:
+            with open(path, 'r') as fp:
+                for line in fp.readlines():
+                    word, replace = [x.strip() for x in line.split(':')]
+                    res[re.compile(word)] = replace
+        except FileNotFoundError:
+            pass
+        return res

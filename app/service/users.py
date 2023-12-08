@@ -1,11 +1,16 @@
 from fastapi import Depends
 from .db import database, Connection
+from aiosqlite import IntegrityError
 from typing import List, Optional
 from app.model.user import UserWithSecret
 import random
 import string
 import hashlib
 from app.utilts import time
+
+
+class UserAlreadyExistsError(Exception):
+    pass
 
 
 class UserService:
@@ -21,11 +26,14 @@ class UserService:
         # get encrypted password.
         pwd = self.gen_actual_pwd(password, salt)
 
-        async with self._db.cursor() as cur:
-            cur = await cur.execute(
-                'insert into users(username, password, salt, ctime) values (?, ?, ?, ?)', (username, pwd, salt, time.current_datetime_str()))
-            await self._db.commit()
-            return cur.lastrowid
+        try:
+            async with self._db.cursor() as cur:
+                cur = await cur.execute(
+                    'insert into users(username, password, salt, ctime) values (?, ?, ?, ?)', (username, pwd, salt, time.current_datetime_str()))
+                await self._db.commit()
+                return cur.lastrowid
+        except IntegrityError:
+            raise UserAlreadyExistsError('username \"{}\" alerady in used.'.format(username))
 
     async def get_all_users(self) -> List[UserWithSecret]:
         async with self._db.execute('select * from users;') as cur:

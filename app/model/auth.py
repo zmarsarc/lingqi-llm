@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from . import user
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.utilts.time import parse_datetime
 
 
@@ -28,3 +28,6 @@ class Session(BaseModel):
     login_time: datetime
     update_time: datetime
     expires: int
+
+    def is_valid(self, dt: datetime) -> bool:
+        return dt < (self.update_time + timedelta(seconds=self.expires))

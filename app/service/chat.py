@@ -10,6 +10,9 @@ from app.utilts import time
 from app.config import chat_settings
 
 
+class LLMAPIError(Exception):
+    pass
+
 class ChatHistoryService:
     """To manage use chat history."""
 
@@ -29,6 +32,20 @@ class ChatHistoryService:
             cur.row_factory = ChatHistoryRaw.row_factory
             return await cur.fetchall()
 
+    async def get_user_chat_history_with_data_and_page(self, uid: int,
+                                                       begin: datetime, end: datetime,
+                                                       page: int, size: int
+                                                       ) -> List[ChatHistoryRaw]:
+        async with self._db.execute('select * from chat_history where user_id = ? and ctime between ? and ? order by id asc limit ? offset ?;',
+                                    (uid, time.format_datetime(begin), time.format_datetime(end), size, page * size)) as cur:
+            cur.row_factory = ChatHistoryRaw.row_factory
+            return await cur.fetchall()
+
+    async def list_conversation_calendar(self, uid: int) -> List[datetime]:
+        async with self._db.execute('select distinct ctime from chat_history where user_id = ?', (uid,)) as cur:
+            cur.row_factory = lambda _, r: time.parse_datetime(r[0])
+            return await cur.fetchall()
+
 
 class ChatService:
     """Use to provide LLM chat service."""
@@ -40,7 +57,12 @@ class ChatService:
         async with httpx.AsyncClient() as client:
             req = LLMChatRequest(query=content, conversation_id='test')
 
-            resp = await client.post(url=chat_settings.api_url, json=req.model_dump(by_alias=True), timeout=chat_settings.api_timeout)
+            try:
+                resp = await client.post(url=chat_settings.api_url, json=req.model_dump(by_alias=True), timeout=chat_settings.api_timeout)
+            except httpx.TimeoutException:
+                raise LLMAPIError("AI service busy, try later.")
+            except httpx.HTTPError:
+                raise LLMAPIError("AI service and temporary unusable, please try later.")
             return LLMChatResponse.model_validate_json(resp.content)
 
     def blacklist_check(self, content: str) -> bool:

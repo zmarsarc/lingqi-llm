@@ -5,9 +5,7 @@ from enum import Enum
 from typing import List
 
 
-class ChatHistoryRaw(BaseModel):
-    id: int
-    uid: int
+class ChatHistoryContent(BaseModel):
     question: str
     answer: str
     time: datetime
@@ -15,6 +13,11 @@ class ChatHistoryRaw(BaseModel):
     @field_serializer('time')
     def format_time(self, dt: datetime):
         return time.format_datetime(dt)
+
+
+class ChatHistoryRaw(ChatHistoryContent):
+    id: int
+    uid: int
 
     @staticmethod
     def row_factory(cur, row):

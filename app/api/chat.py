@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, Query
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 from loguru import logger
+from datetime import datetime
 from app.service.auth import valid_session
 from app.model.auth import Session
 from app.service.chat import ChatHistoryService, ChatService
 from app.model.common import CommonResponse
 from app.model.chat import ChatHistoryRaw
 from app.config import chat_settings
-from app.utilts.time import parse_date
+from app.utilts.time import parse_date, format_date
 
 router = APIRouter()
 
@@ -36,9 +37,21 @@ async def get_chat_history(
     return GetChatHistoryResponse(history=res)
 
 
+class GetChatHistoryCalendarResponse(CommonResponse):
+    data: List[datetime]
+
+    @field_serializer('data')
+    def format_data(self, dt: List[datetime]):
+        return list(dict.fromkeys([format_date(x) for x in dt]))
+
+
 @router.get('/history/calendar')
-async def get_chat_history_calendar():
-    pass
+async def get_chat_history_calendar(
+    ses: Session = Depends(valid_session),
+    srv: ChatHistoryService = Depends(ChatHistoryService)
+) -> GetChatHistoryCalendarResponse:
+    res = await srv.list_conversation_calendar(ses.user.id)
+    return GetChatHistoryCalendarResponse(data=res)
 
 
 class ChatRequest(BaseModel):

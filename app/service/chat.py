@@ -38,6 +38,11 @@ class ChatHistoryService:
             cur.row_factory = ChatHistoryRaw.row_factory
             return await cur.fetchall()
 
+    async def list_conversation_calendar(self, uid: int) -> List[datetime]:
+        async with self._db.execute('select distinct ctime from chat_history where user_id = ?', (uid,)) as cur:
+            cur.row_factory = lambda _, r: time.parse_datetime(r[0])
+            return await cur.fetchall()
+
 
 class ChatService:
     """Use to provide LLM chat service."""

@@ -7,7 +7,7 @@ from app.service.auth import valid_session
 from app.model.auth import Session
 from app.service.chat import ChatHistoryService, ChatService, LLMAPIError
 from app.model.common import CommonResponse
-from app.model.chat import ChatHistoryRaw
+from app.model.chat import ChatHistoryContent
 from app.config import chat_settings
 from app.utilts.time import parse_date, format_date
 
@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 class GetChatHistoryResponse(CommonResponse):
-    history: List[ChatHistoryRaw]
+    history: List[ChatHistoryContent]
 
 
 @router.get('/history')

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import List
 from pydantic import BaseModel
 from loguru import logger
@@ -8,13 +8,37 @@ from app.service.chat import ChatHistoryService, ChatService
 from app.model.common import CommonResponse
 from app.model.chat import ChatHistoryRaw
 from app.config import chat_settings
+from app.utilts.time import parse_date
 
 router = APIRouter()
 
 
+class GetChatHistoryResponse(CommonResponse):
+    history: List[ChatHistoryRaw]
+
+
 @router.get('/history')
-async def get_chat_history(ses: Session = Depends(valid_session), srv: ChatHistoryService = Depends(ChatHistoryService)) -> List[ChatHistoryRaw]:
-    return await srv.get_user_chat_history(ses.user.id)
+async def get_chat_history(
+        start: str = Query(pattern='^\d{4}-\d{2}-\d{2}$'),
+        end: str = Query(pattern='^\d{4}-\d{2}-\d{2}$'),
+        page: int = Query(ge=0),
+        size: int = Query(ge=1),
+        ses: Session = Depends(valid_session),
+        srv: ChatHistoryService = Depends(ChatHistoryService)
+) -> GetChatHistoryResponse | CommonResponse:
+
+    try:
+        start_time = parse_date(start)
+        end_time = parse_date(end)
+    except ValueError:
+        return CommonResponse(code=1, msg="invalid data format, data should list yyyy-mm-dd")
+    res = await srv.get_user_chat_history_with_data_and_page(ses.user.id, start_time, end_time, page - 1, size)
+    return GetChatHistoryResponse(history=res)
+
+
+@router.get('/history/calendar')
+async def get_chat_history_calendar():
+    pass
 
 
 class ChatRequest(BaseModel):
@@ -25,7 +49,6 @@ class ChatResponse(CommonResponse):
     answer: str
 
 
-# TODO add filter in this API.
 @router.post('/chat')
 async def chat(req: ChatRequest, ses: Session = Depends(valid_session),
                history: ChatHistoryService = Depends(ChatHistoryService),

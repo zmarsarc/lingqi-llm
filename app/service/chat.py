@@ -29,6 +29,15 @@ class ChatHistoryService:
             cur.row_factory = ChatHistoryRaw.row_factory
             return await cur.fetchall()
 
+    async def get_user_chat_history_with_data_and_page(self, uid: int,
+                                                       begin: datetime, end: datetime,
+                                                       page: int, size: int
+                                                       ) -> List[ChatHistoryRaw]:
+        async with self._db.execute('select * from chat_history where user_id = ? and ctime between ? and ? order by id asc limit ? offset ?;',
+                                    (uid, time.format_datetime(begin), time.format_datetime(end), size, page * size)) as cur:
+            cur.row_factory = ChatHistoryRaw.row_factory
+            return await cur.fetchall()
+
 
 class ChatService:
     """Use to provide LLM chat service."""

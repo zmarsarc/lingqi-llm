@@ -10,6 +10,9 @@ from app.utilts import time
 from app.config import chat_settings
 
 
+class LLMAPIError(Exception):
+    pass
+
 class ChatHistoryService:
     """To manage use chat history."""
 
@@ -54,7 +57,12 @@ class ChatService:
         async with httpx.AsyncClient() as client:
             req = LLMChatRequest(query=content, conversation_id='test')
 
-            resp = await client.post(url=chat_settings.api_url, json=req.model_dump(by_alias=True), timeout=chat_settings.api_timeout)
+            try:
+                resp = await client.post(url=chat_settings.api_url, json=req.model_dump(by_alias=True), timeout=chat_settings.api_timeout)
+            except httpx.TimeoutException:
+                raise LLMAPIError("AI service busy, try later.")
+            except httpx.HTTPError:
+                raise LLMAPIError("AI service and temporary unusable, please try later.")
             return LLMChatResponse.model_validate_json(resp.content)
 
     def blacklist_check(self, content: str) -> bool:

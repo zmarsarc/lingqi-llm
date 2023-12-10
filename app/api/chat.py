@@ -15,6 +15,7 @@ router = APIRouter()
 
 
 class GetChatHistoryResponse(CommonResponse):
+    total: int
     history: List[ChatHistoryContent]
 
 
@@ -33,8 +34,8 @@ async def get_chat_history(
         end_time = parse_date(end)
     except ValueError:
         return CommonResponse(code=1, msg="invalid data format, data should list yyyy-mm-dd")
-    res = await srv.get_user_chat_history_with_data_and_page(ses.user.id, start_time, end_time, page - 1, size)
-    return GetChatHistoryResponse(history=res)
+    cnt, res = await srv.get_user_chat_history_with_data_and_page(ses.user.id, start_time, end_time, page - 1, size)
+    return GetChatHistoryResponse(history=res, total=cnt)
 
 
 class GetChatHistoryCalendarResponse(CommonResponse):

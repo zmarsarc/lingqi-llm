@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from typing import List
 from pydantic import BaseModel, field_serializer
 from loguru import logger
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.service.auth import valid_session
 from app.model.auth import Session
 from app.service.chat import ChatHistoryService, ChatService, LLMAPIError
@@ -36,6 +36,29 @@ async def get_chat_history(
         return CommonResponse(code=1, msg="invalid data format, data should list yyyy-mm-dd")
     cnt, res = await srv.get_user_chat_history_with_data_and_page(ses.user.id, start_time, end_time, page - 1, size)
     return GetChatHistoryResponse(history=res, total=cnt)
+
+
+class GetChatHistoryTodayResponse(GetChatHistoryResponse):
+    today: datetime
+
+    @field_serializer('today')
+    def format_today(self, dt: datetime):
+        return format_date(dt)
+
+
+@router.get('/history/today')
+async def get_chat_history_in_today(
+    page: int = Query(ge=0),
+    size: int = Query(ge=1),
+    ses: Session = Depends(valid_session),
+    srv: ChatHistoryService = Depends(ChatHistoryService)
+) -> GetChatHistoryTodayResponse | CommonResponse:
+    cur = datetime.now()
+    start_time = datetime(cur.year, cur.month, cur.day)
+    end_time = start_time + timedelta(days=1)
+
+    cnt, res = await srv.get_user_chat_history_with_data_and_page(ses.user.id, start_time, end_time, page - 1, size)
+    return GetChatHistoryTodayResponse(total=cnt, history=res, today=start_time)
 
 
 class GetChatHistoryCalendarResponse(CommonResponse):

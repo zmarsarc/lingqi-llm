@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings
 class ServerSettings(BaseSettings):
     app_port: int = 8000
     admin_port: int = 8001
+    msg_center_port: int = 8002
     dev_reload: bool = False
     host: str = '127.0.0.1'
     https_enable: bool = True
@@ -34,9 +35,18 @@ if __name__ == '__main__':
         'ssl_keyfile': server_settings.ssl_keyfile if server_settings.https_enable else None,
         'ssl_certfile': server_settings.ssl_certfile if server_settings.https_enable else None
     })
+    msg_center_proc = Process(target=uvicorn.run, kwargs={
+        'app': 'msgcenter.main:app',
+        'host': server_settings.host,
+        'port': server_settings.msg_center_port,
+        'reload': server_settings.dev_reload,
+        'ssl_keyfile': server_settings.ssl_keyfile if server_settings.https_enable else None,
+        'ssl_certfile': server_settings.ssl_certfile if server_settings.https_enable else None
+    })
 
     app_proc.start()
     admin_proc.start()
+    msg_center_proc.start()
 
     try:
         while True:
@@ -46,3 +56,4 @@ if __name__ == '__main__':
 
     app_proc.terminate()
     admin_proc.terminate()
+    msg_center_proc.terminate()

@@ -4,6 +4,7 @@ from loguru import logger
 from datetime import datetime, timedelta
 from app.model.common import CommonResponse
 from app.service.users import UserService, VerifiationService
+from app.service.msg import EmailProxy
 from app.config import auth_settings
 
 router = APIRouter()
@@ -21,13 +22,17 @@ class PrepareRegisterResponse(CommonResponse):
 async def prepare_register(req: PrepareRegisterRequest,
                            users: UserService = Depends(UserService),
                            verifiation: VerifiationService = Depends(
-                               VerifiationService)
+                               VerifiationService),
+                           proxy: EmailProxy = Depends(EmailProxy)
                            ) -> PrepareRegisterResponse | CommonResponse:
     u = await users.find_user_by_name(req.username)
     if u is not None:
         return CommonResponse(code=1, msg="username already in used.")
     code = await verifiation.gen_verifiation_code(req.username, auth_settings.verifiation_ttl)
     logger.info('"{}" prepare to register, code {}', req.username, code)
+
+    await proxy.send_plain_email(req.username, 'Register Verfication Code', 'Your verification code is {}.'.format(code))
+
     return PrepareRegisterResponse(ttl=auth_settings.verifiation_ttl)
 
 

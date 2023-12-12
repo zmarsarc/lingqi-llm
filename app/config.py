@@ -5,6 +5,7 @@ from enum import Enum
 class AppSettings(BaseSettings):
     data_file_path: str = '/var/llm-main.db'
     session_file_path: str = '/var/llm-session.db'
+    email_proxy_url: str = 'https://localhost:8002'
 
 
 app_settings = AppSettings()

@@ -7,6 +7,7 @@ api_router_v1 = APIRouter(prefix='/v1')
 api_router_v1.include_router(api.auth_api)
 api_router_v1.include_router(api.user_api)
 api_router_v1.include_router(api.chat_api)
+api_router_v1.include_router(api.account_api, prefix='/account')
 
 admin_router = APIRouter()
 admin_router.include_router(admin.router)

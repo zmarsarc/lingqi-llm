@@ -5,6 +5,7 @@ from enum import Enum
 class AppSettings(BaseSettings):
     data_file_path: str = '/var/llm-main.db'
     session_file_path: str = '/var/llm-session.db'
+    email_proxy_url: str = 'https://localhost:8002'
 
 
 app_settings = AppSettings()
@@ -13,6 +14,7 @@ app_settings = AppSettings()
 class AuthSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='auth_')
     expires: int = 3600
+    verifiation_ttl: int = 900
 
 
 auth_settings = AuthSettings()

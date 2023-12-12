@@ -3,18 +3,18 @@ from app.service.users import UserService, UserAlreadyExistsError
 from app.model.user import UserBasic
 from app.model.common import CommonResponse
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 router = APIRouter()
 
 
 class AddUserRequest(BaseModel):
-    username: str
+    username: EmailStr
     password: str
 
 
 class AddUserResponse(BaseModel):
-    username: str
+    username: EmailStr
     id: int
 
 

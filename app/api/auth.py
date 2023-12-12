@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from app.service.auth import AuthService, LoginError
 from app.model.common import CommonResponse
 
@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 class LoginRequest(BaseModel):
-    username: str
+    username: EmailStr
     password: str
 
 

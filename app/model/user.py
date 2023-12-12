@@ -1,11 +1,11 @@
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, EmailStr
 from datetime import datetime
 from app.utilts import time
 
 
 class UserBasic(BaseModel):
     id: int
-    username: str
+    username: EmailStr
     ctime: datetime
 
     @field_serializer('ctime')
@@ -30,7 +30,7 @@ class UserWithSecret(UserBasic):
 
 class VerifiationRaw(BaseModel):
     id: int
-    username: str
+    username: EmailStr
     code: str
     ctime: datetime
     ttl: int

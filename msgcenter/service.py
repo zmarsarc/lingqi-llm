@@ -14,4 +14,5 @@ class EmailService:
 
         with smtplib.SMTP_SSL(msg_settings.smtp_host) as client:
             client.login(msg_secrets.smtp_username, msg_secrets.smtp_password)
-            client.send_message(msg)
+            return client.send_message(msg)
+            

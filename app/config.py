@@ -13,6 +13,7 @@ app_settings = AppSettings()
 class AuthSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='auth_')
     expires: int = 3600
+    verifiation_ttl: int = 900
 
 
 auth_settings = AuthSettings()

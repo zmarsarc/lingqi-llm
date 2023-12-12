@@ -5,6 +5,7 @@ services:
     image: lqtech/llm-web-backend
     container_name: llm_app
     network_mode: host
+
     environment:
       # define app server port.
       - APP_PORT=8200
@@ -39,5 +40,15 @@ services:
       # replace: replace sensitive words by its replacement.
       # - CHAT_BLACKLIST_MODE=block
  
+    secrets:
+      - smtp_password
+      - smtp_username
+
     volumes:
       - /var/llm/:/var/:rw
+
+secrets:
+    smtp_username:
+      file: <you smtp username file>
+    smtp_password:
+      file: <you smtp password file>

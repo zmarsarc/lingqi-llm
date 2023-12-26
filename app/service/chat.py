@@ -90,9 +90,9 @@ class ChatService:
         return res
 
     async def asr(self, file: UploadFile) -> str:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=chat_settings.asr_api_timeout) as client:
             files = {'file': file.file}
-            r = await client.post("http://localhost:8003", files=files)
+            r = await client.post(chat_settings.asr_api_url, files=files)
             return r.json()['res']
 
     @functools.cache

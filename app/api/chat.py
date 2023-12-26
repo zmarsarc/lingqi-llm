@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile
 from typing import List
 from pydantic import BaseModel, field_serializer
 from loguru import logger
@@ -123,3 +123,13 @@ async def chat(req: ChatRequest, ses: Session = Depends(valid_session),
             return ChatResponse(answer=safe_answer)
     except LLMAPIError as e:
         return CommonResponse(code=1, msg=str(e))
+
+
+class AutomaticSpeechRecognizationResponse(CommonResponse):
+    text: str
+
+
+@router.post('/chat/asr')
+async def automatic_speech_recognize(file: UploadFile, ses: Session = Depends(valid_session), chat: ChatService = Depends(ChatService)):
+    res = await chat.asr(file)
+    return AutomaticSpeechRecognizationResponse(text=res)

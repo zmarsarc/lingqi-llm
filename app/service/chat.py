@@ -1,7 +1,7 @@
 import httpx
 import functools
 import re
-from fastapi import Depends
+from fastapi import Depends, UploadFile
 from datetime import datetime
 from typing import List, Dict, Tuple
 from app.service.db import database, Connection
@@ -88,6 +88,12 @@ class ChatService:
             if p.search(content):
                 res = re.sub(p, r, res)
         return res
+
+    async def asr(self, file: UploadFile) -> str:
+        async with httpx.AsyncClient() as client:
+            files = {'file': file.file}
+            r = await client.post("http://localhost:8003", files=files)
+            return r.json()['res']
 
     @functools.cache
     def _load_blacklist(self, path: str) -> Dict[re.Pattern, str]:

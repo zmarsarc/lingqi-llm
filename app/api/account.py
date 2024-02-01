@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel, EmailStr
-from loguru import logger
 from datetime import datetime, timedelta
-from responses import Responses, internal_error, ok
-from app.service.users import UserService, VerifiationService
-from app.service.msg import EmailProxy, ProxyError
+
+from fastapi import APIRouter, Depends
+from loguru import logger
+from pydantic import BaseModel, EmailStr
+
 from app.config import auth_settings
+from app.service.msg import EmailProxy, ProxyError
+from app.service.users import UserService, VerifiationService
+from responses import Responses, internal_error, ok
 
 router = APIRouter()
 
@@ -27,7 +29,7 @@ async def prepare_register(req: PrepareRegisterRequest,
                            ) -> PrepareRegisterResponse | Responses:
     u = await users.find_user_by_name(req.username)
     if u is not None:
-        return ResourceWarning(code=1, msg="username already in used.")
+        return Responses(code=1, msg="username already in used.")
     code = await verifiation.gen_verifiation_code(req.username, auth_settings.verifiation_ttl)
     logger.info('"{}" prepare to register, code {}', req.username, code)
 

@@ -1,0 +1,16 @@
+[Unit]
+Description=Lingqi LLM Web Service
+After=network.target
+
+[Service]
+Environment=COMPOSE_FILE=<path to your compose file>
+Environment=WORKING_DIR=<path to your project directory>
+ExecStart=/usr/bin/docker compose --file ${COMPOSE_FILE} --project-directory ${WORKING_DIR} up
+ExecStop=/usr/bin/docker compose --file ${COMPOSE_FILE} --project-directory ${WORKING_DIR} down
+ExecReload=/usr/bin/docker compose --file ${COMPOSE_FILE} --project-directory ${WORKING_DIR} restart
+Type=simple
+Restart=on-failure
+RestartSec=15s
+
+[Install]
+WantedBy=multi-user.target

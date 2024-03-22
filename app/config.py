@@ -34,7 +34,7 @@ class ChatSettings(BaseSettings):
     api_timeout: int = 15
 
     # Specify the automatic speech recognization API.
-    asr_api_url: str = 'http://localhost:8003/recognize/file'
+    asr_api_url: str = 'http://llm_asr/recognize/file'
     asr_api_timeout: int = 60
 
     # For blacklist words filteration, mode can be 'disable', 'block' or 'replace'.
